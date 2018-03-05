@@ -202,7 +202,6 @@ body
 }
 #Table2
 {
-   border: 2px #FF0000 solid;
    background-color: transparent;
    background-image: none;
    border-collapse: separate;
@@ -226,6 +225,32 @@ body
    width: 104px;
    height: 46px;
 }
+
+#Table2 .cellbedType
+{
+   background-color: cornsilk;
+   background-image: none;
+   border: 1px #C0C0C0 solid;
+   text-align: left;
+   vertical-align: top;
+   width: 104px;
+   height: 46px;
+}
+
+#Table2 .cellsmoke
+{
+   background-color:transparent;
+   color: slateblue;
+   font-size: 20px;
+   font-weight: bold;
+   background-image: none;
+   border: 1px #C0C0C0 solid;
+   text-align: center;
+   vertical-align: top;
+   width: 104px;
+   height: 46px;
+}
+
 #Table2 .cell1
 {
    background-color: transparent;
@@ -233,9 +258,20 @@ body
    border: 1px #C0C0C0 solid;
    text-align: left;
    vertical-align: top;
-   width: 108px;
+   width: 400px;
    height: 46px;
 }
+#Table2 .celldesc1
+{
+   background-color: bisque;
+   background-image: none;
+   border: 1px #C0C0C0 solid;
+   text-align: left;
+   vertical-align: top;
+   width: 400px;
+   height: 46px;
+}
+
 #Table2 .cell2
 {
    background-color: transparent;

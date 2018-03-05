@@ -7,12 +7,27 @@
     <meta name="generator" content="WYSIWYG Web Builder 12 Trial Version - http://www.wysiwygwebbuilder.com">
     <link href="chooseRoom.css" rel="stylesheet">
     <link href="1ChooseRoom.css" rel="stylesheet">
+
+
 </head>
+
+<?php
+    $checkInDate = $_POST["checkInDate"];  
+    $checkOutDate = $_POST["checkOutDate"];  
+    $noOfRoom = $_POST["noOfRoom"];  
+    $noOfAdults = $_POST["noOfAdults"];  
+    $noOfKids = $_POST["noOfKids"];  
+    $addressId = $_POST["address"];
+    $roomTypeId  = $_POST["roomType"];
+  
+
+  
+?>
 
 <?php
 $servername = "localhost";
 $username   = "root";
-$password   = "passw0rd";
+$password   = "";
 $dbName     = "reservation";
 
 // Create connection
@@ -22,52 +37,37 @@ $conn = new mysqli($servername, $username, $password, $dbName);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 } else {
-    $sql    = "SELECT id, type FROM room_type";
-    $result = $conn->query($sql);
-}
 
-?>
-
-
-<?php
-    $checkInDate = $_POST["checkInDate"];  
-    $checkOutDate = $_POST["checkOutDate"];  
-    $noOfRoom = $_POST["noOfRoom"];  
-    $noOfAdults = $_POST["noOfAdults"];  
-    $noOfKids = $_POST["noOfKids"];  
-    $address = $_POST["address"];
-    $roomTypeId = $_POST["roomType"];
-    $roomTypeName = '';
-    
-    $sql    = "SELECT id, type FROM room_type WHERE type='".$roomTypeId."' ";
-    $result = $conn->query($sql);
-    if ($result->num_rows > 0) {
-        if ($row = $result->fetch_assoc()) {
-            $roomTypeName = $row["type"] ;
-        }
-    }
-
-    $sql    = "select
+    $sql    = "select r.id,
 	b.type as bedType,
 	room_desc,
 	non_smoking,
-	rate	
+    rate, 
+    total_room	
 from
 	room r,
 	bed_type b
 where
-	r.room_type_fk = ".$roomTypeId;   
+    r.room_type_fk = ".$roomTypeId. " 
+    and r.address_fk = ".$addressId."
+    and r.bed_type_fk = b.id"  ;   
 
     $result = $conn->query($sql);
 
-
-
+    // $sql    = "SELECT id, type FROM room_type";
+    // $result = $conn->query($sql);
+}
 
 ?>
 
-
-
-
+ 
+ <script>
+            function reserveRoom(id) {
+             console.log(id + "<?php echo $noOfKids; ?>");
+            document.getElementById("roomId").value = id;  
+            document.getElementById("reserveForm").submit;
+            }
+    </script> 
 
 <body>
     <a href="http://www.wysiwygwebbuilder.com" target="_blank">
@@ -115,7 +115,10 @@ where
                     </div>
                 </form>
             </div>
-            <table style="position:absolute;left:0px;top:272px;width:667px;height:103px;z-index:8;" id="Table2">
+
+<form id="reserveForm"   method="POST" action="./2bookingDetailsTab.php" > 
+
+            <table style="position:absolute;left:0px;top:300px;width:1000px;height:103px;z-index:8;" id="Table2">
                 <tr>
                     <th class="cell0">
                         <span style="color:#000000;font-family:Arial;font-size:13px;line-height:16px;"> Bed   </span>
@@ -125,24 +128,43 @@ where
                     </th>
                     <th class="cell0">Non Smoking </th>
                     <th class="cell0">Price/ night</th>
-                    <th class="cell0">&nbsp;</th>
+                    <th class="cell0"><?php  echo $noOfKids; ?></th>
                     <th class="cell0">&nbsp;</th>
                 </tr>
 
                 <?php 
                        if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
-                            echo '<tr>'; 
-                                echo '<td class="cell0"> <span style="color:#000000;font-family:Arial;font-size:13px;line-height:16px;">'.$row["bedType"]. ' </span>  </td> ' ;
-                                echo '<td class="cell1"> <span style="color:#000000;font-family:Arial;font-size:13px;line-height:16px;">'.$row["room_desc"].' </span> </td> ' ;
-                                echo '<td class="cell0">'.$row["non_smoking"].'</td> ' ;
+
+                         $roomId =  $row["id"] ;
+
+                             $desc  = explode('.',  $row["room_desc"]) ;   
+                             $fullDesc = '';
+                             foreach ($desc as $feat) {
+                                $fullDesc =  $fullDesc. '</br></br>'. $feat;
+                            }
+
+                            $sql2 = "SELECT COUNT(*) as cnt FROM user_reservation WHERE room_id_fk=".$roomId; 
+                            $bookedRoomCountResult = $conn->query($sql2);
+                            $bookedRoomCount = 0;
+                            if ($counterRow = $bookedRoomCountResult->fetch_assoc()) {
+                                    $bookedRoomCount =  $counterRow["cnt"] ; 
+                            }
+
+                            $availableRoom = $row["total_room"] - $bookedRoomCount;
+
+
+                            echo '<tr style="background-color: cornsilk">'; 
+                                echo '<td class="cellbedType"> <span style="color:#000000;font-family:Arial;font-size:13px;line-height:16px;">'.$row["bedType"]. ' </span>  </td> ' ;
+                                echo '<td class="celldesc1"> <span style="color:#000000;font-family:Arial;font-size:13px;line-height:16px;">'.$fullDesc.' </span> </td> ' ;
+                                echo '<td class="cellsmoke">'.$row["non_smoking"].'</td> ' ;
                                 echo '<td class="cell0">$'.$row["rate"].'.00</td>';
                                 
                                 echo '<td class="cell0">'; 
-                                    echo '<input type="button" value="Choose" />';
+                                    echo '<input type="submit" name="reserve" style=" font-weight: bold;" value="Reserve" onclick="reserveRoom('.$roomId.') ;"  />';
                                 echo '</td>' ;
                                 
-                                echo '<td class="cell0">&nbsp;</td>' ;
+                                echo '<td class="cell0"> <b style="color:red;font-size:30px"> '.$availableRoom.' </b>   wonderful rooms available with this price. </br> <b> Hurry up!!  </b> </td>' ;
                             echo '</tr>'; 
 
                         }
@@ -150,6 +172,14 @@ where
                 
                 ?>
             </table>
+
+                       <input type="hidden" id="roomId" name="roomId" />
+                       <input type="hidden" id="checkInDate" name="checkInDate" value="<?php echo $checkInDate; ?>" />
+                       <input type="hidden" id="checkOutDate" name="checkOutDate" value="<?php echo $checkOutDate; ?>"  />
+                       <input type="hidden" id="noOfRoom" name="noOfRoom" value="<?php echo $noOfRoom; ?>"  />
+                       <input type="hidden" id="noOfAdults" name="noOfAdults" value="<?php echo $noOfAdults; ?>"  />
+                       <input type="hidden" id="noOfKids" name="noOfKids"  value="<?php echo $noOfKids; ?>"  />
+
         </form>
     </div>
     <marquee direction="left" scrolldelay="90" scrollamount="6" behavior="scroll" loop="0" style="position:absolute;left:0px;top:137px;width:1225px;height:38px;z-index:16;"
@@ -163,3 +193,9 @@ where
 </body>
 
 </html>
+ 
+
+<?php
+  mysqli_close($conn);
+
+?>
